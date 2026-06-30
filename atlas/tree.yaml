@@ -1,0 +1,66 @@
+# Machine-readable skeleton of the Atlas.
+# Node list is derived from markdown frontmatter `id:` values; edges from
+# `depends_on` / `unlocks`. A renderer that produces a PoE-style SVG lives in
+# `tree/render.py` (not yet written).
+
+version: 0.1
+generated: 2026-06-30
+
+layers:
+  L1: ops
+  L2: platform
+  L3: capability
+  L4: pillar
+  L5: experience
+  L6: commercial
+
+pillars:
+  - id: pillar.capture
+    file: pillars/capture.md
+  - id: pillar.search
+    file: pillars/search.md
+  - id: pillar.share
+    file: pillars/share.md
+
+capabilities:
+  - id: capability.search.full-text-search
+    file: capabilities/full-text-search.md
+  - id: capability.capture.tagging
+    file: capabilities/tagging.md
+  - id: capability.share.version-history
+    file: capabilities/version-history.md
+
+platform:
+  - id: platform.storage
+    file: platform/storage.md
+  - id: platform.auth
+    file: platform/auth.md
+  - id: platform.sync-engine
+    file: platform/sync-engine.md
+
+ops:
+  - id: ops.backups
+    file: ops/backups.md
+  - id: ops.observability
+    file: ops/observability.md
+
+experience:
+  - id: experience.editor-ux
+    file: experience/editor-ux.md
+
+keystones:
+  - id: keystone.sync-strategy
+    file: keystones/sync-strategy.md
+    branches: [crdt, ot]
+
+personas:
+  - id: persona.solo-user
+    file: personas/solo-user.md
+  - id: persona.team-admin
+    file: personas/team-admin.md
+
+refs:
+  - file: refs/to-github.md
+
+# The full adjacency list is assembled by walking `depends_on` / `unlocks` in
+# each node's frontmatter. Total nodes: 13.

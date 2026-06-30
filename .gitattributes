@@ -1,0 +1,17 @@
+# Line-ending policy — makes checkouts deterministic across macOS/Linux/Windows.
+#
+# Git for Windows ships with core.autocrlf=true, which rewrites LF -> CRLF on
+# checkout. That breaks two things the `org` engine relies on:
+#   * .patch files — `git apply` matches byte-for-byte and fails on CRLF.
+#   * .sh scripts  — bash chokes on the `\r` in a CRLF shebang / `set -euo pipefail`.
+#
+# `.gitattributes` overrides each user's core.autocrlf per-file and travels with the
+# repo, so every clone (no per-machine setup) gets the same line endings.
+
+# Safety net: git auto-detects text and stores it LF in the repo, so nobody can ever
+# commit CRLF. (Working-tree eol stays platform-native unless pinned below.)
+* text=auto
+
+# These MUST be LF in the working tree too, on every platform.
+*.sh    text eol=lf
+*.patch text eol=lf

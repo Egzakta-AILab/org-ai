@@ -1,0 +1,11 @@
+# Command aliases for the notewell repo.
+# Rendered by `org install --component commands` into the active coding tool's
+# commands directory (e.g. .claude/commands/ for Claude Code, .cursor/commands/
+# for Cursor). The renderer generates a thin wrapper file for each alias so the
+# command is invokable as /<alias> and delegates to the target agent.
+#
+# Key:   alias name → invoked as /<alias> in the tool
+# Value: target agent name (must match an agent file in platform/agents/notewell/)
+
+aliases:
+  review: notewell-orchestrator

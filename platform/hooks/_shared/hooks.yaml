@@ -1,0 +1,13 @@
+# Workspace-shared hooks — installed user-globally by `org install --global
+# --component hooks` so they fire from any cwd (workspace root, any sub-repo,
+# any sub-dir). Unlike per-repo hooks under platform/hooks/<repo>/, these are
+# NOT layered into per-repo settings: a Stop hook registered in both the
+# user-global settings and a repo's settings would fire twice per turn.
+hooks:
+  # Closing-loop nudge. After a work turn, if (and only if) a real signal fires
+  # and we haven't already asked this session, the script returns a Stop-block
+  # with additionalContext that tells the model to ask one AskUserQuestion.
+  # No signal → exit 0 (the overwhelming majority of Stop events). At most one
+  # question per session (session memo); 7-day per-signal skip-cache.
+  - event: Stop
+    script: ask-once.sh

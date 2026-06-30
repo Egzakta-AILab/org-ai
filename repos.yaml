@@ -1,0 +1,83 @@
+# =============================================================================
+# repos.yaml — the canonical manifest for the egzakta workspace.
+#
+# Single source of truth describing every repository, how the repos relate, and
+# which coding-tool assets each one receives. `org` reads this file to clone,
+# install platform assets, run cross-repo operations, and generate human-readable
+# indexes. Hand-maintained repo lists are derived from this file, never the other
+# way around.
+#
+# Fields per repo:
+#   url          git remote — REQUIRED. Every workspace member must be cloneable by
+#                teammates; entries without a URL get rejected by `org clone --check`
+#                so the manifest can't silently divide workspaces across machines.
+#   status       active | legacy | experimental
+#   tags         free-form selectors for `org ... --tags <sel>`
+#   depends_on   repos this one needs (e.g. infra for integration tests)
+#   provides     capabilities this repo exposes to others (infra services, etc.)
+#   tools        coding tools `org install` targets by default (claude|cursor|droid)
+#   skills       skill names (see platform/skills/index.yaml) to project into this
+#                repo's per-tool .claude/skills/ and .cursor/skills/ dirs
+#   description  one line; human-facing
+#
+# Personal scratch / third-party reference clones (e.g. forks of upstream libs) belong
+# in `.org-ignore` next to this file, NOT in the manifest. The manifest is the public
+# contract; reference clones are private to whoever cloned them.
+#
+# Workspace-level (top-level `skills:`):
+#   global       skills installed by `org install --global` into ~/.claude/skills/
+#                and ~/.cursor/skills/ — for generic tools used across all repos.
+# =============================================================================
+
+version: 1
+
+# Workspace-level skills. Installed user-wide by `org install --global`; consumed
+# by every repo that targets a tool with a `paths.skills_global` (claude, cursor).
+skills:
+  global:
+    - linear
+    - obsidian-cli
+    - atlas
+    # Workspace-shared vendor skills. Vendored under
+    # platform/skills/vendor/<name>/. See platform/skills/index.yaml.
+    - grill-with-docs
+    - diagnose
+    - zoom-out
+    - handoff
+    - review-2axis
+    # Workspace user-profile completion. See platform/skills/vendor/profile-me/.
+    - profile-me
+    # Codebase-exploration subagent; default tool for repo exploration.
+    # See platform/skills/vendor/fastcontext/.
+    - fastcontext
+
+repos:
+  notewell:
+    url: https://github.com/your-org/notewell.git
+    status: active
+    tags: [active, backend, frontend]
+    depends_on: [infra]
+    tools: [claude, cursor, droid]
+    description: Main product repo — backend API + frontend, search pipeline.
+
+  infra:
+    url: https://github.com/your-org/infra.git
+    status: active
+    tags: [infra]
+    provides: [postgres, nats, storage]
+    tools: [claude, cursor, droid]
+    description: Shared infrastructure (compose stacks) other repos consume for integration tests.
+
+  legacy-wiki:
+    url: https://github.com/your-org/legacy-wiki.git
+    status: legacy
+    tags: [legacy, backend]
+    tools: [claude, cursor, droid]
+    description: Previous wiki implementation; active only for content migration into notewell.
+
+  search-lab:
+    url: https://github.com/your-org/search-lab.git
+    status: experimental
+    tags: [experimental, search]
+    tools: [claude, cursor, droid]
+    description: Search-quality evaluation harness (synthetic queries, NDCG).

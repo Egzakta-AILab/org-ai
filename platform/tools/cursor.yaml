@@ -1,0 +1,54 @@
+# Cursor tool profile.
+# Describes how `org install` renders tool-agnostic platform sources for Cursor.
+tool: cursor
+
+paths:
+  agents: .cursor/agents
+  instructions: AGENTS.md
+  # Cursor's .mdc rules are the original format (description / globs / alwaysApply).
+  # Claude Code 2.0.64+ added an equivalent .claude/rules/*.md with `paths:` and no
+  # `alwaysApply`; the renderer translates a single source file in platform/rules/
+  # into either shape based on the active tool profile. Factory has no dedicated
+  # rules surface today and folds equivalent guidance into AGENTS.md.
+  rules: .cursor/rules
+  # Custom slash commands (Cursor v1.6+). Plain Markdown files at
+  # .cursor/commands/<name>.md — filename becomes the command, file content
+  # is the prompt. NO YAML frontmatter (Cursor renders it as literal text);
+  # the render branch strips ours. Args via $1/$2/… (not $ARGUMENTS); the
+  # render translates the $ARGUMENTS convention we use in sources.
+  commands: .cursor/commands
+  # Cursor uses the same SKILL.md format as Claude (launched Feb 2026); Factory's
+  # droid v0.26.0 Skills System also consumes it. Only the discovery path differs
+  # per tool. See claude.yaml for the scope split rationale.
+  skills_global: ~/.cursor/skills
+  skills_project: .cursor/skills
+  # User-global homes for workspace-shared agents + commands (resolved from any cwd).
+  # Sourced from platform/{agents,commands}/_shared/ on `org install --global`.
+  agents_global: ~/.cursor/agents
+  commands_global: ~/.cursor/commands
+  # Hooks (Cursor v1.0+). Bindings live in a DEDICATED .cursor/hooks.json file
+  # (not part of general settings), use a flat per-binding shape, camelCase event
+  # names, and a top-level `version: 1` wrapper. Scripts land at
+  # .cursor/hooks/_org/<name>.sh per the engine namespace. The hooks module
+  # absorbs the schema differences from a single tool-agnostic hooks.yaml source.
+  hooks: .cursor/hooks
+  settings: .cursor/hooks.json
+  # User-global hooks home (resolved from any cwd). Sourced from
+  # platform/hooks/_shared/ on `org install --global --component hooks`. Scripts
+  # land at ~/.cursor/hooks/_org/<name>.sh; bindings merge into the global
+  # hooks.json (dedicated file, flat schema, `version: 1` wrapper).
+  hooks_global: ~/.cursor/hooks
+  settings_global: ~/.cursor/hooks.json
+
+repo_relative_paths: true
+
+# Cursor agent frontmatter carries an explicit model and a readonly flag.
+frontmatter:
+  emit: [name, model, description, readonly]
+  description_style: plain
+
+tokens:
+  INSTRUCTIONS_FILE: AGENTS.md
+  REVIEW_ENTRYPOINT: /review
+  SUBAGENT_DISPATCH: |-
+    **Launch selected reviewers in parallel.** Use your tool harness's sub-agent invocation primitive — Cursor: `/<agent-name>` in successive turns; if your harness supports concurrent dispatch, prefer that. Set `RUN_ID="${RUN_ID}"` so each child writes to `{{R}}.reviews/${RUN_ID}/<agent-name>.md`.

@@ -1,0 +1,143 @@
+# =============================================================================
+# Skills registry.
+#
+# Each entry declares a skill that `org install --component skills` can install
+# into a coding tool's skills directory. The current consumers are:
+#   * Claude Code  — ~/.claude/skills/ + .claude/skills/
+#   * Cursor       — ~/.cursor/skills/ + .cursor/skills/    (since Feb 2026)
+#   * Factory drd  — ~/.factory/skills/ + .factory/skills/  (since droid v0.26.0,
+#                    "Claude Code-compatible SKILL.md support")
+# All three consume the same SKILL.md format (YAML frontmatter + markdown body),
+# so the engine performs a byte-identical directory sync into each per-tool dest.
+#
+# Modes:
+#   reference   the skill lives upstream; the engine clones it (pinned to `ref`)
+#               into the destination. No upstream content is ever committed here.
+#   vendor      the skill is authored by us under platform/skills/vendor/<name>/;
+#               the engine copies it into the destination, excluding .git,
+#               node_modules, and .env*. Used by `atlas` (knowledge-graph
+#               consultation skill — see `platform/skills/vendor/atlas/SKILL.md`).
+#
+# Reference-mode fields:
+#   source         git URL
+#   ref            tag or branch — pin to a tag for reproducibility
+#   sub_path       optional path inside the cloned repo (for repos that contain
+#                  a single skill nested under skills/<name>/)
+#   layout: multi  for repos that contain MANY skills (each at skills/<name>/);
+#                  the engine installs each as a separate skill
+#   post_install   shell commands run in the destination after checkout
+#                  (idempotent — re-run only when the pinned ref or this list changes)
+#   secrets_env    env vars the skill needs at runtime; documentation only — the
+#                  engine NEVER reads or copies secrets
+#
+# Tool projection:
+#   tools          which tools this skill installs into. All three (claude, cursor,
+#                  droid) are valid today; pick the subset that makes sense per skill.
+# =============================================================================
+
+skills:
+
+  linear:
+    mode: reference
+    source: https://github.com/wrsmith108/linear-claude-skill
+    ref: v3.2.0
+    tools: [claude, cursor, droid]
+    # Patches are applied as committed changes on a local `org-managed` branch
+    # rooted at `ref`. `git apply --check` fires before any mutation, so a
+    # ref-bump that breaks a patch fails fast with a clear "rebase this patch"
+    # message instead of silently dropping our customizations.
+    patches:
+      - linear/atlas-labels.patch
+    post_install:
+      - npm install
+    secrets_env:
+      - LINEAR_API_KEY
+
+  obsidian-cli:
+    mode: reference
+    source: https://github.com/pablo-mano/Obsidian-CLI-skill
+    ref: main
+    sub_path: skills/obsidian-cli
+    tools: [claude, cursor, droid]
+
+  # Vendor skill (authored at platform/skills/vendor/atlas/): teaches agents
+  # how and when to use `org atlas` to consult the egzakta knowledge graph.
+  # This is the headless backbone — `obsidian-cli` is the GUI-only companion
+  # for live editing in a running Obsidian app.
+  atlas:
+    mode: vendor
+    tools: [claude, cursor, droid]
+
+  # Workspace-shared, egzakta-adapted skills under platform/skills/vendor/<name>/.
+  # Authored from scratch in our voice — mattpocock's instructional rigor
+  # preserved, his references swapped for our atlas / /work-ticket /
+  # pytest+Linear flow. We own them; quarterly read of upstream for new
+  # techniques, no automated sync.
+  grill-with-docs:
+    mode: vendor
+    tools: [claude, cursor, droid]
+
+  diagnose:
+    mode: vendor
+    tools: [claude, cursor, droid]
+
+  zoom-out:
+    mode: vendor
+    tools: [claude, cursor, droid]
+
+  handoff:
+    mode: vendor
+    tools: [claude, cursor, droid]
+
+  review-2axis:
+    mode: vendor
+    tools: [claude, cursor, droid]
+
+  # Profile completion grill — fills the qualitative fields written by `org user init`.
+  # See platform/skills/vendor/profile-me/SKILL.md.
+  profile-me:
+    mode: vendor
+    tools: [claude, cursor, droid]
+
+  # Codebase-exploration subagent. Agents delegate repo search here instead of
+  # broad grep/glob/read in main context; returns file:line citations.
+  # See platform/skills/vendor/fastcontext/SKILL.md.
+  fastcontext:
+    mode: vendor
+    tools: [claude, cursor, droid]
+
+  # Personal opt-in (NOT in skills.global). Token-compressed communication.
+  # Devs add to their profile `skills:` to install via `org install --global`.
+  # See platform/skills/vendor/caveman/SKILL.md. Auto-activation hooks deferred —
+  # invoked manually (/caveman) until the hooks story lands.
+  caveman:
+    mode: vendor
+    tools: [claude, cursor, droid]
+  caveman-commit:
+    mode: vendor
+    tools: [claude, cursor, droid]
+  caveman-review:
+    mode: vendor
+    tools: [claude, cursor, droid]
+  compress:
+    mode: vendor
+    tools: [claude, cursor, droid]
+
+  # Personal opt-in (NOT in skills.global). Third-party MIT skill: autonomous
+  # modify→verify→keep/discard iteration loop with 12 subcommands. Reference mode,
+  # pinned — bump `ref` to upgrade. sub_path is the plugin bundle, not
+  # .claude/skills/autoresearch/, because only the bundle inlines the subcommand
+  # bodies — the engine syncs the skill dir alone (no slash commands, no hooks).
+  autoresearch:
+    mode: reference
+    source: https://github.com/uditgoenka/autoresearch
+    ref: v2.1.2
+    sub_path: plugins/autoresearch/skills/autoresearch
+    tools: [claude, cursor, droid]
+
+  # Personal opt-in (NOT in skills.global). Strategic-reasoning mode — egzakta
+  # port of lerugray/hammerstein (MIT), grounded in `org atlas` instead of the
+  # upstream RAG corpus/CLI. See platform/skills/vendor/hammerstein/SKILL.md.
+  hammerstein:
+    mode: vendor
+    tools: [claude, cursor, droid]

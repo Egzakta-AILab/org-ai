@@ -1,0 +1,24 @@
+---
+description: Data-fetching conventions for the notewell backend and frontend.
+globs:
+  - "notewell/backend/src/**/*.py"
+  - "notewell/frontend/src/**/*.ts"
+  - "notewell/frontend/src/**/*.tsx"
+alwaysApply: false
+---
+
+# Data-fetching conventions — notewell
+
+## Backend (FastAPI)
+
+- All database access goes through the repository layer (`src/repositories/`). No raw SQL in route handlers or service functions.
+- Repository methods must be `async` and accept a `db: AsyncSession` injected via FastAPI dependency injection. Never create a session inside a function.
+- Pagination: all list endpoints accept `limit` (max 100, default 20) and `cursor` query params. Never return unbounded lists.
+- Never expose internal database ids in API responses. Use opaque identifiers or UUIDs.
+
+## Frontend (React / TypeScript)
+
+- Data fetching lives in `src/api/` modules, not in components. Components call hooks; hooks call the API module.
+- Use `react-query` (TanStack Query) for server state. No hand-rolled fetch + `useState` for async data.
+- Loading and error states are always handled explicitly — no silent swallows.
+- Never pass raw API response objects to child components. Map to typed view-model types at the boundary (`src/types/`).

@@ -1,0 +1,67 @@
+# Factory droid tool profile.
+# Describes how `org install` renders tool-agnostic platform sources for Factory (droid).
+#
+# Surface parity with claude.yaml / cursor.yaml (as of droid v0.26.0):
+#   * agents → .factory/droids/<name>.md (droid's sub-agent surface).
+#   * standards → AGENTS.md (the cross-tool standard).
+#   * commands → .factory/commands/<name>.md (Claude-compatible). Droids are also
+#     invoked directly as /<droid-name>, so 1:1 wrappers are redundant; the renderer
+#     skips them via `commands_only_aliases: true` and emits only declared aliases.
+#   * skills → ~/.factory/skills/ and .factory/skills/ with the same Claude-compatible
+#     SKILL.md format Cursor consumes too (droid v0.26.0 Skills System).
+#
+# Not yet supported by droid: a dedicated rules surface. Code-convention guidance for
+# Factory still lives in AGENTS.md alongside the standards content.
+tool: droid
+
+paths:
+  agents: .factory/droids
+  instructions: AGENTS.md
+  commands: .factory/commands
+  # Code-convention rules (droid). Plain Markdown files at .factory/rules/<name>.md
+  # — no YAML frontmatter (droid does not parse it). The .mdc Cursor sources we
+  # consume DO have frontmatter (description/globs/alwaysApply); the renderer
+  # strips it and optionally surfaces `globs` as a body `**Applies to**` line.
+  rules: .factory/rules
+  skills_global: ~/.factory/skills
+  skills_project: .factory/skills
+  # User-global homes for workspace-shared agents + commands (resolved from any cwd).
+  # Sourced from platform/{agents,commands}/_shared/ on `org install --global`.
+  # Droid uses `droids` as the agents surface name; same global hierarchy.
+  agents_global: ~/.factory/droids
+  commands_global: ~/.factory/commands
+  # Hooks (droid v0.21+). Same nested {matcher, hooks: [{type, command}]}
+  # schema as Claude and the same PascalCase event names (Stop, UserPromptSubmit,
+  # PreToolUse, …) — droid is Claude-compatible here. Scripts land at
+  # .factory/hooks/_org/<name>.sh. Settings file is .factory/settings.json (shared
+  # with other settings; engine touches only the hooks block via the managed marker).
+  hooks: .factory/hooks
+  settings: .factory/settings.json
+  # User-global hooks home (resolved from any cwd). Sourced from
+  # platform/hooks/_shared/ on `org install --global --component hooks`. Scripts
+  # land at ~/.factory/hooks/_org/<name>.sh; bindings merge into the global
+  # settings.json (nested schema, shared with other settings — engine touches
+  # only the managed hooks block).
+  hooks_global: ~/.factory/hooks
+  settings_global: ~/.factory/settings.json
+
+repo_relative_paths: true
+
+# Factory droids use a folded description that ends with an explicit invocation hint,
+# plus a readonly flag. No model field.
+frontmatter:
+  emit: [name, description, readonly]
+  description_style: folded
+  description_suffix: "Invoke with: /{name}"
+
+# Droids are invoked directly as /<droid-name>; .factory/commands/ wrappers would
+# shadow the droid invocation for no benefit. Emit only declared aliases (e.g.
+# /review → notewell-orchestrator). Claude leaves this false and emits a wrapper
+# per agent because Claude needs the wrapper for the slash command to exist at all.
+commands_only_aliases: true
+
+tokens:
+  INSTRUCTIONS_FILE: AGENTS.md
+  REVIEW_ENTRYPOINT: /review
+  SUBAGENT_DISPATCH: |-
+    **Launch selected reviewers in parallel.** Use your tool harness's sub-agent invocation primitive. Set `RUN_ID="${RUN_ID}"` so each child writes to `{{R}}.reviews/${RUN_ID}/<agent-name>.md`.

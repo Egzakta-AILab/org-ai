@@ -1,0 +1,34 @@
+diff --git a/SKILL.md b/SKILL.md
+index d80eaf1..1955e5c 100644
+--- a/SKILL.md
++++ b/SKILL.md
+@@ -210,6 +210,7 @@ See [Project Management Commands](#project-management-commands) for full referen
+    - Exactly ONE type label (`feature`, `bug`, `refactor`, `chore`, `spike`)
+    - 1-2 domain labels (`backend`, `frontend`, `security`, `infrastructure`, etc.)
+    - Scope labels if relevant (`blocked`, `breaking-change`, `tech-debt`)
++   - **egzakta workspace:** also attach `atlas:<node-id>` for any atlas node the issue ships, modifies, or measures (see labels.md → Atlas Linkage Labels). The node-id comes from the atlas frontmatter `id:` field — e.g. `atlas:capability.search.full-text-search`.
+ 
+ 3. **Project assignment.** Assign to the appropriate project based on context (active sprint, feature area, or user instruction). If no project is obvious, ask the user. In batch/subagent context, use the project associated with the parent issue or the default initiative project.
+ 
+diff --git a/docs/labels.md b/docs/labels.md
+index 2ff81bc..3d88df1 100644
+--- a/docs/labels.md
++++ b/docs/labels.md
+@@ -64,6 +64,17 @@ Scope labels flag special conditions. Only apply when relevant.
+ | `enterprise` | Enterprise-tier only | #7057FF |
+ | `soc2` | Compliance requirement | #0052CC |
+ 
++### Atlas Linkage Labels (egzakta workspace, 0-N)
++
++Attach an `atlas:<node-id>` label whenever an issue maps to one or more atlas nodes (the dotted `id:` field from the node's frontmatter). Closes the reverse loop from Linear back to the atlas vault, and feeds the `org atlas drift` report.
++
++| Label form | Example | When |
++|---|---|---|
++| `atlas:<node-id>` | `atlas:capability.search.full-text-search` | Issue ships, modifies, or measures this node |
++| `atlas:<pillar-id>` | `atlas:pillar.content` | Cross-cutting issue under a pillar with no narrower node |
++
++Keep labels stable across the issue lifecycle — they survive renames in atlas filenames because they reference frontmatter `id:`, not paths.
++
+ ---
+ 
+ ## Label Selection Decision Tree

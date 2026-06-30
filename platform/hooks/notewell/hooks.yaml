@@ -1,0 +1,24 @@
+# Per-repo hooks for notewell — installed into the repo's .claude/settings.json
+# (or tool-equivalent) by `org install --component hooks` when cwd is inside
+# the notewell repo. Unlike the workspace-shared hooks under _shared/, these run
+# ONLY in the notewell repo context.
+#
+# Scripts are resolved relative to this file's directory under scripts/.
+hooks:
+  # Drift check: after a tool use that writes or edits files, verify that any
+  # atlas node whose code_refs include modified paths is still accurate.
+  # Returns a nudge (additionalContext) if drift is detected; exits 0 (silent)
+  # when everything looks in sync.
+  - event: PostToolUse
+    matcher:
+      tool_name:
+        - Write
+        - Edit
+        - NotebookEdit
+    script: scripts/drift-check.sh
+
+  # Closing-loop nudge. Mirrors the workspace-shared ask-once hook but scoped
+  # to notewell-specific signals (e.g. open PR with no atlas-node update when
+  # code_refs changed). At most one question per session; 7-day skip-cache.
+  - event: Stop
+    script: scripts/nudge.sh

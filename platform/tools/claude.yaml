@@ -1,0 +1,69 @@
+# Claude Code tool profile.
+# Describes how `org install` renders tool-agnostic platform sources for Claude Code.
+tool: claude
+
+# Where rendered assets land inside a target repo (relative to its root).
+paths:
+  agents: .claude/agents
+  instructions: CLAUDE.md
+  # Slash-command wrappers: .claude/commands/<name>.md pointer files expose each agent
+  # as a slash command. Cursor invokes agents directly as /<name> and omits this path.
+  # Factory ALSO has a .factory/commands/ surface (droid v0.26.0) but only emits
+  # alias wrappers, not 1:1 wrappers (droids are invoked directly).
+  commands: .claude/commands
+  # Path-scoped code-convention rules (Claude Code 2.0.64+). The frontmatter
+  # superset uses `paths:` (glob) and an optional `description:`. Cursor uses
+  # `.mdc` with `globs:` + `alwaysApply:` — the renderer translates between the
+  # two formats so a single source file in platform/rules/<repo>/*.mdc lands in
+  # both tools' expected shape. Factory has no rules surface today; the renderer
+  # skips it for droid.
+  rules: .claude/rules
+  # Skills live in two scopes. `skills_global` is the user-level home for generic
+  # tools (linear, obsidian-cli); `skills_project` is per-repo skills auto-loaded
+  # only when that repo is open. Both are managed by `org install --component skills`
+  # (the --global flag picks between them). Cursor (Feb 2026) and Factory (droid
+  # v0.26.0) both consume the same SKILL.md format — see their YAMLs for paths.
+  skills_global: ~/.claude/skills
+  skills_project: .claude/skills
+  # User-global homes for workspace-shared agents + commands (resolved from any cwd).
+  # Sourced from platform/{agents,commands}/_shared/ on `org install --global`.
+  agents_global: ~/.claude/agents
+  commands_global: ~/.claude/commands
+  # Hooks: shell scripts run on Claude Code events (Stop, UserPromptSubmit,
+  # PreToolUse, …). Engine writes scripts to `.claude/hooks/_org/<name>.sh` and
+  # merges the event/matcher/command bindings into `settings.json`. User-authored
+  # hooks pointing outside `_org/` are preserved across install runs.
+  hooks: .claude/hooks
+  settings: .claude/settings.json
+  # User-global hooks home (resolved from any cwd). Sourced from
+  # platform/hooks/_shared/ on `org install --global --component hooks`. Scripts
+  # land at ~/.claude/hooks/_org/<name>.sh; bindings merge into the global
+  # settings.json. The rendered command path is absolute since the script lives
+  # under $HOME, not the active project.
+  hooks_global: ~/.claude/hooks
+  settings_global: ~/.claude/settings.json
+
+# true  => repo-relative paths, token {{R}} renders to ""  (agent runs with cwd = repo root)
+# false => workspace-relative, {{R}} renders to "<repo>/"
+# All tools default to repo-relative: the agents run git commands that require cwd = repo root,
+# so repo-relative paths are the only coherent choice.
+repo_relative_paths: true
+
+# Agent-file frontmatter: which keys to emit (in order) and how to render the description.
+frontmatter:
+  emit: [name, description]
+  description_style: plain
+
+# Values substituted for {{TOKEN}} placeholders in source bodies.
+tokens:
+  INSTRUCTIONS_FILE: CLAUDE.md
+  REVIEW_ENTRYPOINT: /review
+  SUBAGENT_DISPATCH: |-
+    **Launch selected reviewers in parallel.** Use the Agent tool, one Agent call per reviewer, all in a single message. Set `RUN_ID="${RUN_ID}"` in each prompt so the child writes to `{{R}}.reviews/${RUN_ID}/<agent-name>.md`.
+
+       Use this prompt template per reviewer:
+       ```
+       You are <agent-name>. Run your full Review Procedure for the current branch.
+       Environment: RUN_ID=${RUN_ID}. Persist your output to {{R}}.reviews/${RUN_ID}/<agent-name>.md per your procedure.
+       Return a short summary (under 100 words) of your verdict and top findings — your full output is on disk.
+       ```

@@ -1,0 +1,19 @@
+# Sibling directories `org` should ignore when checking manifest hygiene.
+#
+# Use this file for personal scratch clones, third-party references, vendored
+# library forks, or anything else the workspace doesn't manage. Workspace members
+# belong in repos.yaml; everything personal stays here.
+#
+# This file IS committed and shared across the team — every teammate sees it.
+# Entries below are workspace-wide: third-party reference forks that more than
+# one teammate might clone locally, or shared loose dirs referenced by the atlas.
+# Truly machine-specific scratch dirs should be added to your local `.git/info/exclude`
+# instead, not here.
+
+# Personal scratch directory — exploratory work that hasn't been promoted to
+# a proper repo yet.
+scratch
+
+# Third-party reference clone kept locally for browsing implementation details;
+# not a workspace member.
+vendor-ref
