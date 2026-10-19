@@ -51,7 +51,7 @@ Clone the meta-repo (the folder is called `egzakta` even though the remote is
 `egzakta-org`), then put the `org` CLI on your PATH:
 
 ```bash
-git clone https://github.com/UkisAI-Egzakta/org-ai.git egzakta
+git clone https://github.com/Egzakta-AILab/org-ai.git egzakta
 cd egzakta
 uv tool install --editable ./org
 org version          # should print a version — that means it's working

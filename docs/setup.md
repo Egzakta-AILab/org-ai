@@ -8,7 +8,7 @@ The meta-repo (`org-ai`) versions the orchestration layer. Clone it as your work
 root. The canonical local folder name is `egzakta/` even though the remote is `org-ai`:
 
 ```bash
-git clone https://github.com/UkisAI-Egzakta/org-ai.git egzakta
+git clone https://github.com/Egzakta-AILab/org-ai.git egzakta
 cd egzakta
 ```
 
