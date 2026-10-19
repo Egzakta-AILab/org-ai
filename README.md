@@ -15,7 +15,7 @@ workspace as independent, gitignored clones, so each stays fully usable on its o
 ## Quick start
 
 ```bash
-git clone https://github.com/UkisAI-Egzakta/org-ai.git egzakta
+git clone https://github.com/Egzakta-AILab/org-ai.git egzakta
 cd egzakta
 uv tool install --editable ./org      # puts `org` on PATH (or: pipx install -e ./org)
 org clone                             # clone every repo listed in repos.yaml
